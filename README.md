@@ -6,7 +6,7 @@ This is a simple tool for creating all necessary files and folders to start a ne
 
 #### Project name 
 
-Use --name flag to specify the project name. This name will be used for golang module creation and git repository initialization.
+Use --name flag to specify the project name. This name will be used for golang module creation.
 Be careful, use only accepted names.
 
 `go template --name "amazing-parser" `

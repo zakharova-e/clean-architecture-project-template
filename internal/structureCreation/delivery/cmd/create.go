@@ -26,7 +26,7 @@ func(handler *CmdHandler) CreateProjectTemplate(options creationModels.Options) 
 		return err
 	}
 
-	err = handler.usecase.CreateBaseStructure()
+	err = handler.usecase.CreateBaseStructure(options)
 	if err!=nil{
 		return err
 	}
