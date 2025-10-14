@@ -14,12 +14,12 @@ func NewFilesAndFolderRepository() creationModule.IFilesAndFolderRepository{
 	return &FilesAndFolderRepository{}
 }
 
-func(repo *FilesAndFolderRepository) CreateFolder(name string) error{
-	return os.Mkdir(name, 0755)
+func(repo *FilesAndFolderRepository) CreateFolder(folderName string) error{
+	return os.Mkdir(folderName, 0755)
 }
 
-func(repo *FilesAndFolderRepository) CreateFile(name string, content []byte) error{
-	f, err := os.Create(name)
+func(repo *FilesAndFolderRepository) CreateFile(fileName string, content []byte) error{
+	f, err := os.Create(fileName)
     if err != nil {
         return err
     }
