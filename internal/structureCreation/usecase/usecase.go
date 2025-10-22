@@ -3,7 +3,10 @@ package usecase
 import (
 	"embed"
 	"errors"
+	"fmt"
+	"strings"
 	"text/template"
+	"regexp"
 
 	"golang.org/x/sync/errgroup"
 
@@ -33,12 +36,15 @@ func NewStructureCreationUseCase(filesRepo creationModule.IFilesAndFolderReposit
 	return &StructureCreationUseCase{filesRepo: filesRepo,commandsRepo: commandsRepo}
 }
 
-func(uc *StructureCreationUseCase) GoModuleInitialisation(name string) error{
-	if name == ""{
+func(uc *StructureCreationUseCase) GoModuleInitialisation(projectName string) error{
+	if projectName == ""{
 		return errors.New("invalid project name")
 	}
-	//todo check if all symbols are allowed
-	return uc.commandsRepo.Execute("go",[]string{"mod","init",name})
+	validErr := ValidateProjectName(projectName)
+	if validErr!= nil{
+		return validErr
+	}
+	return uc.commandsRepo.Execute("go",[]string{"mod","init",projectName})
 }
 
 func(uc *StructureCreationUseCase) GitRepositoryInitialisation() error{
@@ -63,16 +69,32 @@ func(uc *StructureCreationUseCase) CreateBaseStructure(options creationModels.Op
 		return err
 	})
 	eg.Go(func() error {
-		return uc.filesRepo.CreateFile("Readme.md",getReadmeContent(options))
+		content,errR := getReadmeContent(options)
+		if errR!=nil{
+			return errR
+		}
+		return uc.filesRepo.CreateFile("Readme.md",content)
 	})
 	eg.Go(func() error {
-		return uc.filesRepo.CreateFile(".gitignore",getGitignoreContent(options))
+		content,errR := getGitignoreContent(options)
+		if errR!=nil{
+			return errR
+		}
+		return uc.filesRepo.CreateFile(".gitignore",content)
 	})
 	eg.Go(func() error {
-		return uc.filesRepo.CreateFile("Dockerfile",getDockerFileContent(options))
+		content,errR := getDockerFileContent(options)
+		if errR!=nil{
+			return errR
+		}
+		return uc.filesRepo.CreateFile("Dockerfile",content)
 	})
 	eg.Go(func() error {
-		return uc.filesRepo.CreateFile(".dockerignore",getDockerignoreContent(options))
+		content,errR := getDockerignoreContent(options)
+		if errR!=nil{
+			return errR
+		}
+		return uc.filesRepo.CreateFile(".dockerignore",content)
 	})
 	eg.Go(func() error {
 		return uc.filesRepo.CreateFile(".env",[]byte{})
@@ -121,7 +143,15 @@ func(uc *StructureCreationUseCase) CreateModules(moduleNames []string) error{
 }
 
 
-
+func ValidateProjectName(projectName string) error{
+	projectNameTrimmed := strings.TrimSpace(projectName)
+	validPattern := `^[a-zA-Z0-9._\-]+(/[a-zA-Z0-9._\-]+)*$`
+	matched, _ := regexp.MatchString(validPattern, projectNameTrimmed)
+	if !matched {
+		return fmt.Errorf("invalid module name %q",projectName)
+	}
+	return nil
+}
 
 
 	
